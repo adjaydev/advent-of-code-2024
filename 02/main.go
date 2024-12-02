@@ -9,8 +9,8 @@ import (
 	"strings"
 )
 
-func main() {
-	f, err := os.Open("02c.txt")
+func readFile() [][]int {
+	f, err := os.Open("02.txt")
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -23,7 +23,6 @@ func main() {
 		log.Fatal(err)
 	}
 
-	validRows := 0
 	rows := [][]int{}
 
 	// Read and process lines
@@ -37,50 +36,54 @@ func main() {
 		}
 		rows = append(rows, tempRow)
 	}
+	return rows
+}
 
+func main() {
+	rows := readFile()
+
+	validRows := 0
 	for _, r := range rows {
-		counter := 0
-		rowLength := len(r) - 1
-		increaseCheck := true
-		decreaseCheck := true
-		errorsFoundIncrease := 0
-		errorsFoundDecrease := 0
-
-		// Iterate for increase
-		for counter < rowLength {
-			currentValue := r[counter]
-			nexValue := r[counter+1]
-			maxNextValue := currentValue + 3
-			if nexValue > maxNextValue || nexValue <= currentValue {
-				errorsFoundIncrease += 1
-			}
-			if errorsFoundIncrease > 1 {
-				increaseCheck = false
-			}
-			counter += 1
-		}
-
-		counter = 0
-		// Iterate for decrease
-		for counter < rowLength {
-			currentValue := r[counter]
-			nexValue := r[counter+1]
-			minNextValue := currentValue - 3
-			if nexValue < minNextValue || nexValue >= currentValue {
-				errorsFoundDecrease += 1
-			}
-			if errorsFoundDecrease > 1 {
-				decreaseCheck = false
-			}
-			counter += 1
-		}
+		increaseCheck := inspectRowIncrease(r)
+		decreaseCheck := inspectRowDecrease(r)
 
 		if increaseCheck == true || decreaseCheck == true {
 			validRows += 1
-			fmt.Printf("%v %v %v %v %v\n", r, increaseCheck, errorsFoundIncrease, decreaseCheck, errorsFoundDecrease)
 		} else {
+			// fmt.Printf("%v %v %v\n", r, increaseCheck, decreaseCheck)
 		}
 	}
 	fmt.Printf("Valid rows: %v\n", validRows)
+}
 
+func inspectRowIncrease(row []int) bool {
+	counter := 0
+	rowLength := len(row) - 1
+
+	for counter < rowLength {
+		currentValue := row[counter]
+		nexValue := row[counter+1]
+		maxNextValue := currentValue + 3
+		if nexValue > maxNextValue || nexValue <= currentValue {
+			return false
+		}
+		counter += 1
+	}
+	return true
+}
+
+func inspectRowDecrease(row []int) bool {
+	counter := 0
+	rowLength := len(row) - 1
+
+	for counter < rowLength {
+		currentValue := row[counter]
+		nexValue := row[counter+1]
+		maxNextValue := currentValue - 3
+		if nexValue < maxNextValue || nexValue >= currentValue {
+			return false
+		}
+		counter += 1
+	}
+	return true
 }
