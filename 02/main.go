@@ -57,33 +57,29 @@ func main() {
 }
 
 func inspectRowIncrease(row []int) bool {
-	counter := 0
-	rowLength := len(row) - 1
-
-	for counter < rowLength {
-		currentValue := row[counter]
-		nexValue := row[counter+1]
-		maxNextValue := currentValue + 3
-		if nexValue > maxNextValue || nexValue <= currentValue {
+	for i := 0; i < len(row)-1; i++ {
+		current := row[i]
+		next := row[i+1]
+		if next > current+3 {
 			return false
 		}
-		counter += 1
+		if next <= current {
+			return false
+		}
 	}
 	return true
 }
 
 func inspectRowDecrease(row []int) bool {
-	counter := 0
-	rowLength := len(row) - 1
-
-	for counter < rowLength {
-		currentValue := row[counter]
-		nexValue := row[counter+1]
-		maxNextValue := currentValue - 3
-		if nexValue < maxNextValue || nexValue >= currentValue {
+	for i := 0; i < len(row)-1; i++ {
+		current := row[i]
+		next := row[i+1]
+		if next < current-3 {
 			return false
 		}
-		counter += 1
+		if next >= current {
+			return false
+		}
 	}
 	return true
 }
