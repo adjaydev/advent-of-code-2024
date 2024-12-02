@@ -44,42 +44,44 @@ func main() {
 
 	validRows := 0
 	for _, r := range rows {
-		increaseCheck := inspectRowIncrease(r)
-		decreaseCheck := inspectRowDecrease(r)
 
-		if increaseCheck == true || decreaseCheck == true {
+		if isSafe(r) || isSafeSpecial(r) {
 			validRows += 1
-		} else {
-			// fmt.Printf("%v %v %v\n", r, increaseCheck, decreaseCheck)
 		}
 	}
+
 	fmt.Printf("Valid rows: %v\n", validRows)
+
 }
 
-func inspectRowIncrease(row []int) bool {
-	for i := 0; i < len(row)-1; i++ {
-		current := row[i]
-		next := row[i+1]
-		if next > current+3 {
-			return false
-		}
-		if next <= current {
-			return false
+func isSafeSpecial(row []int) bool {
+	for i := 0; i < len(row); i++ {
+
+		// New row without ith value
+		newRow := append([]int{}, row[:i]...)
+		newRow = append(newRow, row[i+1:]...)
+
+		if isSafe(newRow) {
+			return true
 		}
 	}
-	return true
+	return false
 }
 
-func inspectRowDecrease(row []int) bool {
+func isSafe(row []int) bool {
+	increaseCheck := true
+	decreaseCheck := true
+
 	for i := 0; i < len(row)-1; i++ {
-		current := row[i]
-		next := row[i+1]
-		if next < current-3 {
+		diff := row[i] - row[i+1]
+		if diff < -3 || diff > +3 || row[i] == row[i+1] {
 			return false
 		}
-		if next >= current {
-			return false
+		if diff < 0 {
+			decreaseCheck = false
+		} else if diff > 0 {
+			increaseCheck = false
 		}
 	}
-	return true
+	return decreaseCheck || increaseCheck
 }
