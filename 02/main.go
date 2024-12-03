@@ -9,8 +9,54 @@ import (
 	"strings"
 )
 
-func readFile() [][]int {
-	f, err := os.Open("02.txt")
+func main() {
+	rows := readFileContents("02.txt")
+
+	validRows := 0
+	for _, r := range rows {
+		if isSafe(r) || isSafeSpecial(r) {
+			validRows += 1
+		}
+	}
+
+	fmt.Printf("Valid rows: %v\n", validRows)
+
+}
+
+func isSafe(row []int) bool {
+	increaseCheck := true
+	decreaseCheck := true
+
+	for i := 0; i < len(row)-1; i++ {
+		diff := row[i] - row[i+1]
+		if diff < -3 || diff > +3 || row[i] == row[i+1] {
+			return false
+		}
+		if diff < 0 {
+			decreaseCheck = false
+		} else if diff > 0 {
+			increaseCheck = false
+		}
+	}
+	return decreaseCheck || increaseCheck
+}
+
+func isSafeSpecial(row []int) bool {
+	for i := 0; i < len(row); i++ {
+
+		// New row without ith value
+		newRow := append([]int{}, row[:i]...)
+		newRow = append(newRow, row[i+1:]...)
+
+		if isSafe(newRow) {
+			return true
+		}
+	}
+	return false
+}
+
+func readFileContents(filename string) [][]int {
+	f, err := os.Open(filename)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -37,51 +83,4 @@ func readFile() [][]int {
 		rows = append(rows, tempRow)
 	}
 	return rows
-}
-
-func main() {
-	rows := readFile()
-
-	validRows := 0
-	for _, r := range rows {
-
-		if isSafe(r) || isSafeSpecial(r) {
-			validRows += 1
-		}
-	}
-
-	fmt.Printf("Valid rows: %v\n", validRows)
-
-}
-
-func isSafeSpecial(row []int) bool {
-	for i := 0; i < len(row); i++ {
-
-		// New row without ith value
-		newRow := append([]int{}, row[:i]...)
-		newRow = append(newRow, row[i+1:]...)
-
-		if isSafe(newRow) {
-			return true
-		}
-	}
-	return false
-}
-
-func isSafe(row []int) bool {
-	increaseCheck := true
-	decreaseCheck := true
-
-	for i := 0; i < len(row)-1; i++ {
-		diff := row[i] - row[i+1]
-		if diff < -3 || diff > +3 || row[i] == row[i+1] {
-			return false
-		}
-		if diff < 0 {
-			decreaseCheck = false
-		} else if diff > 0 {
-			increaseCheck = false
-		}
-	}
-	return decreaseCheck || increaseCheck
 }
