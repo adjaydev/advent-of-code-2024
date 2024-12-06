@@ -20,7 +20,7 @@ func main() {
 		batch := strings.Split(b, ",")
 		valueIndexes := findValueIndexes(batch)
 
-		// Validate updatePage
+		// Iterate over pages
 		for _, p := range updatePages {
 			page := strings.Split(p, "|")
 
@@ -40,7 +40,6 @@ func main() {
 		}
 	}
 	log.Printf("Total: %d", total)
-
 }
 
 // Create and return a map for the value and the indexes in the batch
