@@ -5,60 +5,68 @@ import (
 	"io"
 	"log"
 	"os"
+	"strconv"
 	"strings"
 )
 
 func main() {
-	updatePages := readFileContents("test1.txt")
-	updateBatch := readFileContents("test2.txt")
+	updatePages := readFileContents("input1.txt")
+	updateBatches := readFileContents("input2.txt")
+	total := 0
 
-	log.Println(updatePages)
-	log.Println(updateBatch)
-	// TODO: Iterate update batches
-
-	for _, b := range updateBatch[:1] {
+	// Iterate over batches
+	for _, b := range updateBatches {
+		batchIsValid := true
 		batch := strings.Split(b, ",")
+		valueIndexes := findValueIndexes(batch)
 
-		// Check update lines
-		for i := range batch {
-			activePage := batch[i : i+1][0]
-			// activePage := string(row[i+1])
-			preList := batch[:i+1]
-			postList := batch[i+1:]
-			log.Printf("pre: %v - active: %v - post: %v", preList, activePage, postList)
+		// Validate updatePage
+		for _, p := range updatePages {
+			page := strings.Split(p, "|")
 
-			potential := findUpdateLines(updatePages, activePage)
-			log.Printf("Potential: %v", potential)
-			// for _, updateLine := range ctn1 {
-			// 	updates := strings.Split(updateLine, "|")
-			// 	isValidUpdate(activePage, preList, postList, updates)
-			// }
+			if validPage(page, batch) {
+				pageAIndex := valueIndexes[page[0]]
+				pageBIndex := valueIndexes[page[1]]
+
+				if pageAIndex > pageBIndex {
+					batchIsValid = false
+					break
+				}
+			}
+		}
+		if batchIsValid {
+			num, _ := strconv.Atoi(batch[len(batch)/2])
+			total += num
 		}
 	}
+	log.Printf("Total: %d", total)
 
 }
 
-func isValidUpdate(active string, pre, post, updateLine []string) {
-	log.Printf("updateline: %v %v %v", updateLine, updateLine[0], updateLine[1])
+// Create and return a map for the value and the indexes in the batch
+func findValueIndexes(batch []string) map[string]int {
+	valueIndexes := make(map[string]int, len(batch))
+	for i, b := range batch {
+		valueIndexes[b] = i
+	}
+	return valueIndexes
+
 }
 
-func findUpdateLines(lines []string, activePage string) []string {
-	updates := []string{}
-	for _, v := range lines {
-		line := strings.Split(v, "|")
-		if line[0] == activePage || line[1] == activePage {
-			updates = append(updates, v)
+// Iterate batches over current page an check if page values are in batch
+// Return: true if both page values are in batch
+func validPage(page, batch []string) bool {
+	checkA := false
+	checkB := false
+	for _, b := range batch {
+		if b == page[0] {
+			checkA = true
+		}
+		if b == page[1] {
+			checkB = true
 		}
 	}
-	return updates
-}
-
-func checkUpdateLines(row []string) {
-	for i := range row {
-		preList := row[:i+1]
-		postList := row[i+1:]
-		log.Printf("pre: %v - post: %v", preList, postList)
-	}
+	return checkA && checkB
 }
 
 func readFileContents(filename string) []string {
