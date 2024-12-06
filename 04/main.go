@@ -17,7 +17,28 @@ func main() {
 	slash := checkSlash(ctn, lineLength, ctnLength)
 	backslash := checkBackslash(ctn, lineLength, ctnLength)
 
+	xmas := checkXmas(ctn, lineLength, ctnLength)
+
 	log.Println(slash + backslash + verticalCount + horizontalCount)
+	log.Println(xmas)
+}
+
+func checkXmas(ctn []string, lineLength, lines int) int {
+	maxRowPos := lines - 2
+	maxCharPos := lineLength - 2
+	c := 0
+	for i := 0; i < maxRowPos; i++ {
+		for j := 0; j < maxCharPos; j++ {
+			wordOne := ctn[i][j:j+1] + ctn[i+1][j+1:j+2] + ctn[i+2][j+2:j+3]
+			if wordOne == "MAS" || wordOne == "SAM" {
+				wordTwo := string(ctn[i][j+2]) + string(ctn[i+1][j+1]) + string(ctn[i+2][j])
+				if wordTwo == "MAS" || wordTwo == "SAM" {
+					c++
+				}
+			}
+		}
+	}
+	return c
 }
 
 func checkBackslash(ctn []string, lineLength, lines int) int {
