@@ -2,117 +2,153 @@ package main
 
 import (
 	"bufio"
-	"io"
 	fmt "log"
 	"os"
 )
 
 // Positions
-const up = "^"
-const down = "v"
-const left = "<"
-const right = ">"
-const wall = "#"
-const empty = "."
-const visited = "X"
+const (
+	up      = '^'
+	down    = 'v'
+	left    = '<'
+	right   = '>'
+	wall    = '#'
+	empty   = '.'
+	visited = 'X'
+)
 
 func main() {
-
-	ctn := readFileContents("test.txt")
-	lCount := len(ctn)
-	pCount := len(ctn[0])
-
-	iters := 3
-
-	for i := 0; i < iters; i++ {
-		for i := 0; i < pCount; i++ {
-			newLine := make([]string, pCount)
-			for j := 0; j < lCount; j++ {
-				position := string(ctn[i][j])
-				if playerFound(position) {
-					playerView := playerView(position)
-					if playerView == up {
-						// nextStep := string(ctn[i-1][j])
-						// if nextStep != wall {
-						ctn[i-1][j] = up
-						ctn[i][j] = visited
-						// }
-					}
-					fmt.Println("Player found!")
-				}
-				newLine[j] = position
-			}
-			fmt.Println(newLine)
-		}
-		fmt.Println()
+	ctn := readRunes("input.txt")
+	yCount := len(ctn)
+	xCount := len(ctn[0])
+	playing := true
+	turnAround := map[rune]rune{
+		up:    right,
+		right: down,
+		down:  left,
+		left:  up,
 	}
+
+	for playing {
+		for y := 0; y < xCount; y++ {
+			newLine := make([]rune, xCount)
+			for x := 0; x < yCount; x++ {
+				position := rune(ctn[y][x])
+				if playerFound(position) {
+					playerView := position
+					switch playerView {
+					case up:
+						if !stepAllowed(y-1, x, xCount, yCount) {
+							playing = false
+							break
+						}
+						nextStep := rune(ctn[y-1][x])
+						ctn[y][x] = visited
+						if nextStep != wall {
+							ctn[y-1][x] = up
+						} else {
+							ctn[y][x+1] = turnAround[up]
+						}
+					case right:
+						if !stepAllowed(y, x+1, xCount, yCount) {
+							playing = false
+							break
+						}
+						nextStep := rune(ctn[y][x+1])
+						ctn[y][x] = visited
+						if nextStep != wall {
+							ctn[y][x+1] = right
+						} else {
+							ctn[y][x] = turnAround[right]
+						}
+					case down:
+						if !stepAllowed(y+1, x, xCount, yCount) {
+							playing = false
+							break
+						}
+						nextStep := rune(ctn[y+1][x])
+						ctn[y][x] = visited
+						if nextStep != wall {
+							ctn[y+1][x] = down
+						} else {
+							ctn[y][x] = turnAround[down]
+						}
+					case left:
+						if !stepAllowed(y, x-1, xCount, yCount) {
+							playing = false
+							break
+						}
+						nextStep := rune(ctn[y][x-1])
+						ctn[y][x] = visited
+						if nextStep != wall {
+							ctn[y][x-1] = left
+						} else {
+							ctn[y][x] = turnAround[left]
+						}
+					}
+				}
+				newLine[x] = position
+			}
+			// fmt.Println(string(newLine))
+		}
+
+	}
+
+	steps := 0
+	for _, row := range ctn {
+		for _, position := range row {
+			if position != empty && position != wall {
+				steps++
+			}
+		}
+	}
+	fmt.Printf("Steps taken: %v", steps)
 }
 
-// func playerStep(i, j int, view string, ctn *[]string) {
-// 	if view == up {
-// 		nextStep := string(ctn[i-1][j])
-// 		if nextStep != wall {
-// 			ctn[i-1][j] = nextStep
-// 			ctn[i][j] = visited
-// 		}
-// 	}
-// }
+func move(x, y int, ctn *[][]rune) {
 
-func playerFound(p string) bool {
+}
+
+func stepAllowed(x, y, xMax, yMax int) bool {
+	if x < 0 || x > xMax-1 {
+		return false
+	}
+	if y < 0 || y > yMax-1 {
+		return false
+	}
+	return true
+}
+
+func playerFound(p rune) bool {
 	if p == up || p == down || p == left || p == right {
 		return true
 	}
 	return false
 }
 
-func playerView(p string) string {
-	if p == up {
-		return up
-	}
-
-	if p == down {
-		return down
-	}
-	if p == left {
-		return left
-	}
-	if p == up {
-		return right
-	}
-	panic("Error finding player view.")
-}
-
-func readFileContents(filename string) []string {
-	f, err := os.Open(filename)
+func readRunes(filename string) [][]rune {
+	file, err := os.Open(filename)
 	if err != nil {
-		fmt.Fatal(err)
+		panic(err)
 	}
-	defer f.Close()
+	defer file.Close()
 
-	scanner := bufio.NewScanner(f)
-	scanner.Split(bufio.ScanLines)
+	scanner := bufio.NewScanner(file)
 
-	if err := scanner.Err(); err != nil {
-		fmt.Fatal(err)
-	}
+	var matrix [][]rune
 
-	// Count total lines
-	lineCount := 0
-	for scanner.Scan() {
-		lineCount++
-	}
-
-	f.Seek(0, io.SeekStart)
-	scanner = bufio.NewScanner(f)
-
-	// Read and process lines
-	lines := make([]string, lineCount)
-	i := 0
 	for scanner.Scan() {
 		line := scanner.Text()
-		lines[i] = line
-		i++
+		var row []rune
+		for _, r := range line {
+			row = append(row, r)
+		}
+		matrix = append(matrix, row)
 	}
 
-	return lines
+	if err := scanner.Err(); err != nil {
+		panic(err)
+	}
+
+	return matrix
 }
