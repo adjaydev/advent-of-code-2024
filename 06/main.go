@@ -89,9 +89,13 @@ func main() {
 				}
 				newLine[x] = position
 			}
-			// fmt.Println(string(newLine))
 		}
 
+		if !playing {
+			for _, line := range ctn {
+				fmt.Println(string(line))
+			}
+		}
 	}
 
 	steps := 0
